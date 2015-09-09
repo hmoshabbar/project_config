@@ -1,0 +1,102 @@
+{% load staticfiles %}
+{% load progress_bar %}
+{% load set_var %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="{% static "js/jquery-2.1.1.min.js" %}"></script>
+    {% progress_bar_media %}
+    <script>
+    function fun_sucs(data) {
+    	if (data['success']) {
+    		window.alert('成功');
+    	}
+    	else {
+    		window.alert(JSON.stringify(data));
+    	}
+    	window.location.reload();
+    }    
+    </script>    
+    
+	<style type="text/css">      
+		table {width: 100%; }
+		table td.tr-label {
+			white-space:nowrap
+		}
+		table td.tr-input {
+		    width: 99%
+		}
+		input[type="text"]  {width: 100%;box-sizing: border-box;}
+		div {padding:0; margin:0; display: block;}
+		div.nav { width:100%
+		    margin-top: 0.67em;
+		    margin-bottom: 0.67em;
+		    margin-left: 0;
+		    margin-right: 0;
+		}
+		div.nav-left {}
+		div.content {position: relative; top: 20%}
+		span.nav-prj {font-size: 2em;font-weight: bold;}
+		span.nav-cfg {font-size: 1.5em;}
+
+   </style>    
+</head>
+
+<body>
+	<div class="nav"> 
+		<div class="nav-left">
+			<span class="nav-prj">{{ config.project }}</span> >
+			<span class="nav-cfg">{{ config.info }}</span>
+		</div>
+	</div>
+
+	<div class="content">
+	<form id="abc" action="" enctype="multipart/form-data" method="post" data-success="fun_sucs" >
+		{% csrf_token %}
+	    {{ formset.management_form }}
+		{% progress_bar %} 
+	    <input type="submit" value="保存" />
+	    <button type="button" onclick="{location.href='{% url "views.viewConfigItem" config.project.abbr config.info.abbr %}'}">查看</button> 
+		<table >
+	    	<tr>
+	            <th></th>
+	            <th></th>
+	        </tr>
+		{% set group = 0 %}	        
+	    {% for form in formset %}
+	    	{% if group != form.instance.item.group %}
+				{% set group = form.instance.item.group %}	
+	    		<tr><td>---</td><td>---</td></tr>
+	    	{% endif %}
+	        <tr title="{{ form.instance.item.description }}">
+	            <td class="tr-label">
+	            	{% if form.instance.item.empty %}
+	            		{{ form.instance.item.name }}：
+	            	{% elif form.instance.item.type == 'fil' and form.instance.file %}
+	            		{{ form.instance.item.name }}：
+	            	{% elif form.instance.item.type != 'fil' and form.instance.value and form.instance.value.strip %}
+	            		{{ form.instance.item.name }}：
+	            	{% else %}
+	            		<font color="red">
+	            			{{ form.instance.item.name }}：
+	            		</font>
+	            	{% endif %}
+	            </td>
+	            <td class="tr-input">
+	            {{ form.id }}
+	            {% if form.instance.item.type == 'fil' %} 
+	            	{{ form.file }}
+	            {% else %}
+	            	{{ form.value }}
+	            {% endif %}
+	            </td>
+	        </tr>
+	    {% endfor %}
+	    </table>
+	</form>
+	</div>
+
+</body>
+
+</html>

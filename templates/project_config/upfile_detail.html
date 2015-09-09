@@ -1,0 +1,8 @@
+<h1>{{ object.label }}&nbsp;</h1>
+<p>安装:<a href="itms-services://?action=download-manifest&url={{ basedir }}{{ object.plist.url }}" type="text/plain">{{ upfile.path }}</a></p>
+{% if object.pub %}
+	<p>发布包:<a href="{{ object.pub.url }}"">{{ object.pub.name }}</a></p>
+{% endif %}
+<p>签名包:<a href="{{ object.signed.url }}" type="application/iphone">{{ object.signed }}</a></p>
+<p>用户: {{ object.user }}</p>
+<p>时间: {{ object.up_date }}</p>
