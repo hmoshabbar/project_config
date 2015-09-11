@@ -1,111 +1,79 @@
+{% extends "project_config/base.html" %}
+
 {% load staticfiles %}
 {% load set_var %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <script type="text/javascript" src="{% static "js/jquery-2.1.1.min.js" %}"></script>
+{% block nav-left %}
+         <ol class="breadcrumb">
+            <li>
+              <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle " type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{ config.project }}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                {% for project in projects %}
+                {% if project.name != config.project.name %}   
+                  <li>
+                {% else %}
+                  <li class="dropdown-header">
+                {% endif %}     
+                    <a href="{% url 'project_config.base' %}{{ project.abbr }}/{{ config.info.abbr }}/">{{ project.name }}</a>
+                  </li>
+                {% endfor %}
+                </ul>           
+              </div>
+            </li>
+            <li class="active"><span class="">{{ config.info }}</span></li>
+          </ol> 
+{% endblock %} 
+{% block nav-right %}
+            <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.doConfigItem" config.project.abbr config.info.abbr %}'}">编辑</button> 
+            <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.exportConfigItem" config.project.abbr config.info.abbr %}'}">导出</button> 
+            <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.doPlist" config.project.abbr config.info.abbr %}'}">plist</button>         
+{% endblock %} 
+{% block main-body %}
+   <div class="panel panel-default">
 
-    <style type="text/css">      
-		table {width: 100%; }
-		table td.tr-label {
-			white-space:nowrap
-		}
-		table td.tr-input {
-		    width: 99%
-		}
-		input[type="text"]  {width: 100%;box-sizing: border-box;}
-		div {padding:0; margin:0; display: block;}
-		div.nav { width:100%
-		    margin-top: 0.67em;
-		    margin-bottom: 0.67em;
-		    margin-left: 0;
-		    margin-right: 0;
-		}
-		div.nav-left {}
-		div.content {position: relative; top: 20%}
-		span.nav-prj {font-size: 2em;font-weight: bold;}
-		span.nav-cfg {font-size: 1.5em;}
-		div.nav-nav {display:none;position:absolute;z-index:1000;left:0;background:#eeeeee}
-   </style>   
-</head>
-
-<body>
-
-	<div class="nav"> 
-		<div class="nav-left">
-			<span class="nav-prj" id="nav-prj">{{ config.project }}
-
-			</span>>
-			<span class="nav-cfg">{{ config.info }}</span>
-			<div class="nav-nav" id="nav-nav"> 
-			<ul>
-			{% for project in projects %}
-				<li>
-					<a href="{% url 'project_config.base' %}{{ project.abbr }}/{{ config.info.abbr }}/">{{ project.name }}</a>
-				</li>
-			{% endfor %}
-			</ul>
-			</div>
-		</div>
-	</div>
-
-	<div class="content">
-	<button onclick="{location.href='{% url "views.doConfigItem" config.project.abbr config.info.abbr %}'}">编辑</button> 
-	<button onclick="{location.href='{% url "views.exportConfigItem" config.project.abbr config.info.abbr %}'}">导出</button> 
-	<button onclick="{location.href='{% url "views.doPlist" config.project.abbr config.info.abbr %}'}">plist</button> 
-		<table >
-	    	<tr>
-	            <th></th>
-	            <th></th>
-	        </tr>
-		{% set group = 0 %}	        
-	    {% for item in query %}
-	    	{% if group != item.item.group %}
-				{% set group = item.item.group %}	
-	    		<tr><td>---</td><td>---</td></tr>
-	    	{% endif %}
-	        <tr title="{{ item.item.description }}">
-	            <td class="tr-label">
-	            	{% if item.item.empty %}
-	            		{{ item.item.name }}：
-	            	{% elif item.item.type == 'fil' and item.file %}
-	            		{{ item.item.name }}：
-	            	{% elif item.item.type != 'fil' and item.value and item.value.strip %}
-	            		{{ item.item.name }}：
-	            	{% else %}
-	            		<font color="red">
-	            			{{ item.item.name }}：
-	            		</font>
-	            	{% endif %}
-	            </td>
-	            <td class="tr-input">
-	            {% if item.item.type == 'fil' %} 
-	            	{% if item.file %}
-	            	<a href="{{ item.file.url }}" type="application/force-download">{{ item.file }}</a>
-	            	{% endif %}
-	            {% else %}
-	            	{{ item.value }}
-	            {% endif %}
-	            </td>
-	        </tr>
-	    {% endfor %}
-	    </table>	
-	</div>
-
-    <script>
-		
-		var but = document.getElementById("nav-prj")
-		but.onclick = function() {
-			var ele = document.getElementById("nav-nav")
-			if (ele.style.display == 'block') {
-				ele.style.display = 'none'
-			}
-			else {
-				ele.style.display = 'block'
-			}
-		}
-    </script>  
-</body>
-
-</html>
+      <table class="table table-bordered">
+        {% set group = 0 %}         
+        {% for item in query %}
+        {% if group != item.item.group %}
+        {% set group = item.item.group %} 
+        <tr class="success"><td></td><td></td></tr>
+        {% endif %}
+        <tr>
+          <td class="info">
+            {% if item.item.description %}
+            <abbr title="{{ item.item.description }}">
+            {% endif %}
+            {% if item.item.empty %}
+            {{ item.item.name }}：
+            {% elif item.item.type == 'fil' and item.file %}
+            {{ item.item.name }}：
+            {% elif item.item.type != 'fil' and item.value and item.value.strip %}
+            {{ item.item.name }}：
+            {% else %}
+            <span class="text-danger">
+              {{ item.item.name }}：
+            </span>
+            {% endif %}
+            {% if  item.item.description %}
+            </abbr>
+            {% endif %}
+          </td>
+          <td class="tr-input">
+            {% if item.item.type == 'fil' %} 
+            {% if item.file %}
+            <a href="{{ item.file.url }}" type="application/force-download">{{ item.file }}</a>
+            {% endif %}
+            {% else %}
+            {{ item.value }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>  
+    </div>
+  </div>
+{% endblock %} 
