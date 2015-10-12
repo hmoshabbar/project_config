@@ -10,7 +10,6 @@ from django.db.models import Q
 from django.db import transaction
 from . import forms
 from . import models
-from . import PLIST_TEMPLATE
 
 
 def doConfigItem(request, project, config):
@@ -72,45 +71,16 @@ def exportConfigItem(request, project, config):
     response['Content-Disposition'] = 'attachment; filename="%s"' % (project+'-'+config+'.xls')
     return response
 
-def doPlist(request, project, config):
-    the_config =  get_object_or_404(models.Config, Q(project__abbr=project) & Q(info__abbr=config))
-
-    ConfigItemFormSet = inlineformset_factory(models.Config, models.ConfigItem, extra=0, fields=('value', 'file', ), form=forms.ConfigItemForm)
-    if request.method == 'POST':
-        formset = ConfigItemFormSet(request.POST, request.FILES, instance=the_config)
-        if formset.is_valid():
-            with transaction.atomic():
-                for form in formset:
-                   if form.has_changed():
-                       form.save()
-#             formset.save()
-
-            result = {'success':'0'}
-        else:
-            result = {'err':dict(formset.errors)};
-        return HttpResponse(json.dumps(result), content_type='application/json')
-    else:
-
-        formset = ConfigItemFormSet(instance=the_config, queryset=models.ConfigItem._default_manager
-                                    .filter(Q(item__pk=1) | Q(item__pk=3))
-                                    .order_by('item__group', 'item__order'))
-
-    return render(request, 'project_config/plist_view.html', {'formset': formset, 'config' : the_config})
+def listProject(request, config):
+    configinfo =  get_object_or_404(models.ConfigInfo, Q(abbr=config))
+    infos = models.ConfigInfo.objects.all()
+    keys=models.ConfigItemInfo.objects.filter(info=configinfo, important=True) #['项目名称', '项目经理', '服务器负责', '客户端负责']
+    configs =  models.Config.objects.filter(info=config)
+    query = []
+    for config in configs:
+        query.append((config,[models.ConfigItem.objects.get(config=config, item=key)  for key in keys]))
+#     print(query)
+    return render(request, 'project_config/project_view.html', {'infos' : infos, 'query': query, 'keys' : keys, 'configinfo' : configinfo, 'configs' : configs})
 
 
-def generatePlist(request, project, config):
-    the_config =  get_object_or_404(models.Config, Q(project__abbr=project) & Q(info__abbr=config))
-    query = models.ConfigItem.objects.filter(config=the_config).order_by('item__group', 'item__order') 
-
-    gens = {}
-#     gens['id'] = 
-    gens['idfix'] = gens['id']+'ios8fix1'
-    plist = rule_repl.sub(lambda mt:gens[mt.group(2).lower()] if mt.group(2).lower() in gens else mt.group(1)+mt.group(2)+mt.group(3), pub_plist)
-
-    response = HttpResponse(plist, content_type='application/xml')
-    response['Content-Disposition'] = 'attachment; filename="%s"' % (project+'-'+config+'.xls')
-    return response
-
-def base(request):
-    return HttpResponseNotFound()
     

@@ -1,6 +1,5 @@
-{% extends "project_config/base.html" %}
+{% extends "base.html" %}
 
-{% load staticfiles %}
 {% load set_var %}
 
 {% block nav-left %}
@@ -13,12 +12,12 @@
                 </button>
                 <ul class="dropdown-menu">
                 {% for project in projects %}
-                {% if project.name != config.project.name %}   
+                {% if project.abbr != config.project.abbr %}   
                   <li>
                 {% else %}
                   <li class="dropdown-header">
                 {% endif %}     
-                    <a href="{% url 'project_config.base' %}{{ project.abbr }}/{{ config.info.abbr }}/">{{ project.name }}</a>
+                    <a href="{% url "views.viewConfigItem" project.abbr config.info.abbr %}">{{ project.name }}</a>
                   </li>
                 {% endfor %}
                 </ul>           
@@ -30,7 +29,6 @@
 {% block nav-right %}
             <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.doConfigItem" config.project.abbr config.info.abbr %}'}">编辑</button> 
             <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.exportConfigItem" config.project.abbr config.info.abbr %}'}">导出</button> 
-            <button class="btn btn-default navbar-btn" onclick="{location.href='{% url "views.doPlist" config.project.abbr config.info.abbr %}'}">plist</button>         
 {% endblock %} 
 {% block main-body %}
    <div class="panel panel-default">
@@ -43,7 +41,7 @@
         <tr class="success"><td></td><td></td></tr>
         {% endif %}
         <tr>
-          <td class="info">
+          <td class="info col-sm-3">
             {% if item.item.description %}
             <abbr title="{{ item.item.description }}">
             {% endif %}
@@ -62,7 +60,7 @@
             </abbr>
             {% endif %}
           </td>
-          <td class="tr-input">
+          <td class="col-sm-9">
             {% if item.item.type == 'fil' %} 
             {% if item.file %}
             <a href="{{ item.file.url }}" type="application/force-download">{{ item.file }}</a>

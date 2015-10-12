@@ -1,3 +1,13 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+<head>
+{% include "base_header.html" %}
+{% block extra-header %}
+{% endblock %} 
+</head>
+
+<body>
+  <div class="container-fluid">
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -7,7 +17,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>          
+          <ul class="nav navbar-nav navbar-header-nav">
+            <li>
           {% block nav-left %}{% endblock %} 
+            </li>
+            <li><div class="navbar-btn pgs-container" style="display: none;"><input type="text" value="0" class="pgs" ></div></li>
+          </ul >
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse-1">
           <div class="nav navbar-nav navbar-right btn-group">
@@ -16,3 +31,19 @@
         </div>         
       </div>
     </nav>
+
+{% block main-body %}
+
+{% endblock %} 
+  <script src="/static/js/jquery.knob.min.js"></script>
+  <script>
+    $(function() {
+        $(".pgs").knob({
+          'width':28,
+          'height':28
+        });
+    });  
+  </script>
+ </body>
+
+</html>

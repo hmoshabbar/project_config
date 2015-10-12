@@ -1,6 +1,5 @@
-{% extends "project_config/base.html" %}
+{% extends "base.html" %}
 
-{% load staticfiles %}
 {% load set_var %}
 
 {% block extra-header %}
@@ -39,7 +38,7 @@
         {% for form in formset %}
           {% if group != form.instance.item.group %}
           {% set group = form.instance.item.group %}  
-            <tr class="success"><td>---</td><td>---</td></tr>
+            <br /><br />
           {% endif %}
             <div class="form-group" title="{{ form.instance.item.description }}">
                 <label for="{{ form.value.auto_id }}" class="col-sm-3 control-label">

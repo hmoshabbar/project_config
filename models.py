@@ -7,10 +7,30 @@ from django.db import models
 from contenttyperestrictedfilefield import ContentTypeRestrictedFileField
 from django.utils.encoding import smart_unicode
 from django.db.models.signals import post_save, pre_delete
+from django.utils.deconstruct import deconstructible
 from import_export import resources, fields
 
-def path_and_rename(path):
-    def wrapper(instance, filename):
+#can't use with migration in python 2
+#https://code.djangoproject.com/ticket/22999
+# def path_and_rename(path):
+#     def wrapper(instance, filename):
+#         ext = filename.split('.')[-1]
+#         # get filename
+#         if instance.pk:
+#             filename = '{0}.{1}'.format(instance.pk, ext)
+#         else:
+#             # set filename as random string
+#             filename = '{0}.{1}'.format(uuid4().hex, ext)
+#         # return the whole path to the file
+#         return os.path.join(path, filename)
+#     return wrapper
+@deconstructible
+class PathAndRename(object):
+    
+    def __init__(self, path):
+        self.path = path
+
+    def __call__(self, instance, filename):
         ext = filename.split('.')[-1]
         # get filename
         if instance.pk:
@@ -19,8 +39,9 @@ def path_and_rename(path):
             # set filename as random string
             filename = '{0}.{1}'.format(uuid4().hex, ext)
         # return the whole path to the file
-        return os.path.join(path, filename)
-    return wrapper
+        return os.path.join(self.path, filename)
+
+to_upload_dir = PathAndRename(UPLOAD_DIR)
 
 #配置描述
 class ConfigInfo(models.Model):
@@ -59,6 +80,7 @@ class ConfigItemInfo(models.Model):
     description = models.CharField(max_length=2000, blank=True)  #描述
     group       = models.IntegerField()
     order       = models.IntegerField()
+    important   = models.BooleanField(default=False)
     
     def __unicode__(self):
         return smart_unicode(self.name)
@@ -89,7 +111,7 @@ class ConfigItem(models.Model):
     item        = models.ForeignKey(ConfigItemInfo)
     value       = models.CharField(max_length=2000, blank=True)  #值
     file        = ContentTypeRestrictedFileField(max_upload_size=104857600,
-                                             upload_to=path_and_rename(UPLOAD_DIR), blank=True)  #上传的文件
+                                             upload_to=to_upload_dir, blank=True)  #上传的文件
     last        = models.DateTimeField(auto_now=True)  #上次更新时间
 
     class Meta:

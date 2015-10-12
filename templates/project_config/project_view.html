@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block nav-left %}
+         <ol class="breadcrumb">
+            <li>
+              <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle " type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{ configinfo.name }}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                {% for info in infos %}
+                {% if info.abbr != configinfo.abbr %}   
+                  <li>
+                {% else %}
+                  <li class="dropdown-header">
+                {% endif %}     
+                    <a href="{% url "views.listProject" info.abbr %}">{{ info.name }}</a>
+                  </li>
+                {% endfor %}
+                </ul>           
+              </div>
+            </li>
+          </ol> 
+{% endblock %} 
+
+{% block main-body %}
+   <div class="panel panel-default">
+
+      <table class="table table-bordered">
+		<tr>
+          <th class="col-sm-3">
+
+          </th>
+          {% for key in keys %}
+          <th>
+            {{ key.name }}
+          </th>
+          {% endfor %}
+		</tr>
+        {% for item in query %}
+        <tr>
+          <td class="info col-sm-3">
+            <a href="{% url "views.viewConfigItem" item.0.project.abbr item.0.info.abbr %}">{{ item.0.project.name }}</a>
+          </td>
+          {% for value in item.1 %}
+          <td>
+            {{ value.value }}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>  
+    </div>
+  </div>
+{% endblock %} 
